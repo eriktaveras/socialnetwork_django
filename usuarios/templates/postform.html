@@ -1,0 +1,17 @@
+{% load crispy_forms_tags %}
+
+
+<div class="container">
+<div class="col-md-8">
+    <form accept-charset="UTF-8" action="/postform/" method="POST">
+    <div class="form-group">{% csrf_token %}
+    {{ form.content|as_crispy_field }}
+    <input type="submit" class="btn btn-primary" value="Send">
+        <h6 class="pull-right" id="count_message"></h6>
+        <span id="postform">200</span> Character(s) Remaining
+</div>
+    </form>
+</div>
+
+
+</div>
