@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView, View, DetailView,CreateView, ListView, FormView, RedirectView
+from django.views.generic.edit import UpdateView
 from usuarios.models import Post, Comment, Profile
 from usuarios.forms import PostForm, RegistrationForm, LoginForm, CommentForm, UserEditForm
 from django.contrib.auth.decorators import login_required
@@ -15,6 +16,7 @@ from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.http import HttpResponseRedirect
 from friendship.models import Friend, Follow, Block
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -162,6 +164,8 @@ def profile(request, pk=None):
         return render(request, 'profile.html', {'user': user, 'posts': posts})
 
 
+
+
 def BlogPostLike(request, pk):
     post = get_object_or_404(Post, id=request.POST.get('blogpost_id'))
     if post.likes.filter(id=request.user.id).exists():
@@ -184,25 +188,36 @@ def lista_usuarios(request):
     return render(request, 'lista_usuarios.html', context)
 
 
-def edit_profile(request):
-    if request.method == "POST":
-        form = UserEditForm(request.POST)
-        if form.is_valid():
-            new_username = form.cleaned_data.get('username')
-            new_password = form.cleaned_data.get('password')
-            user = User.objects.get(username=request.user.username)
-            all_user = allusers.objects.get(user=user)
-            user.username = new_username
-            user.set_password(new_password)
-            user.save()
-            return redirect('profile.html', {'form': form} )
+# def edit_profile(request):
+#     if request.method == "POST":
+#         form = UserEditForm(request.POST)
+#         if form.is_valid():
+#             new_username = form.cleaned_data.get('username')
+#             new_password = form.cleaned_data.get('password')
+#             user = User.objects.get(username=request.user.username)
+#             all_user = allusers.objects.get(user=user)
+#             user.username = new_username
+#             user.set_password(new_password)
+#             user.save()
+#             return redirect('profile.html', {'form': form} )
+#
+# class EditarProfile(FormView):
+#     template_name = 'profile-edit.html'
+#     form_class = UserEditForm
+#     success_url = 'profile/'
+#
+#     def form_valid(self, form):
+#         form.instance.user = self.request.user
+#         form.save()
+#         return super().form_valid(form)
 
-class EditarProfile(FormView):
+@method_decorator (login_required, name='dispatch')
+class ProfileUpate(UpdateView):
+    model = Profile
+    fields = ['avatar', 'bio', 'link']
     template_name = 'profile-edit.html'
-    form_class = UserEditForm
-    success_url = 'profile/'
+    success_url = reverse_lazy('profile')
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.save()
-        return super().form_valid(form)
+    def get_object(self):
+        profile, created = Profile.objects.get_or_create(user=self.request.user)
+        return profile

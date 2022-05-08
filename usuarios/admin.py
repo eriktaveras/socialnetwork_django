@@ -2,11 +2,12 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from usuarios.models import Post, Comment
+from usuarios.models import Post, Comment, Profile
 
 # Register your models here.
 
 admin.site.register(Post)
+admin.site.register(Profile)
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
@@ -17,5 +18,3 @@ class CommentAdmin(admin.ModelAdmin):
 
     def approve_comments(self, request, queryset):
         queryset.update(active=True)
-
-
