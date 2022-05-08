@@ -1,10 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load friendshiptags %}
 dsfadsfad
 <div id="link_nav">
-hello {{ user.username }} 
+hello {{ user.username }}
+<p>solicitudes pendientes de amistad: </p>
+{% friends request.user %}
 {{friendship_requests}}
+<p>Followers: </p>
+{% followers request.user %}
 {{followers}}
+<p>Followings: </p>
+{{followings}}
+
+<p>Amigos: </p>
 
 {{amigos}}
+
+
 {% endblock %}

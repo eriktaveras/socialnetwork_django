@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
-from django.contrib.auth.models import User  
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -15,7 +15,7 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-date_create']
-    
+
     @property
     def view_count(self):
         return Like.objects.filter(post=self).count()
@@ -44,4 +44,9 @@ class Comment(models.Model):
     def __str__(self):
         return str(self.user) + ', ' + self.post.content[:40]
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField()
 
+    def __str__(self):
+        return str(self.user)

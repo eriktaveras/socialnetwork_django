@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView, View, DetailView,CreateView, ListView, FormView, RedirectView
-from usuarios.models import Post, Comment
-from usuarios.forms import PostForm, RegistrationForm, LoginForm, CommentForm
-from django.contrib.auth.decorators import login_required 
+from usuarios.models import Post, Comment, Profile
+from usuarios.forms import PostForm, RegistrationForm, LoginForm, CommentForm, UserEditForm
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth import authenticate, login, logout
@@ -16,11 +16,12 @@ from django.utils.decorators import method_decorator
 from django.http import HttpResponseRedirect
 from friendship.models import Friend, Follow, Block
 
+
 # Create your views here.
 class HomeView(ListView):
     model = Post
     template_name = 'home.html'
-    paginate_by = 6
+    paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -80,8 +81,8 @@ class PostViewDetail(DetailView):
             data['post_is_liked'] = liked
 
         return data
-    
-    
+
+
     def post(self, request, *args, **kwargs):
         new_comment = Comment(content=request.POST.get('content'),user=self.request.user, post=self.get_object())
         new_comment.save()
@@ -173,7 +174,7 @@ def BlogPostLike(request, pk):
 def lista_usuarios(request):
     amigos = Friend.objects.friends(request.user)
     followers = Follow.objects.followers(request.user)
-    followings =Follow.objects.following(request.user) 
+    followings =Follow.objects.following(request.user)
     friendship_requests = Friend.objects.requests(request.user)
     context = {'amigos': amigos,
                'followers': followers,
@@ -183,3 +184,25 @@ def lista_usuarios(request):
     return render(request, 'lista_usuarios.html', context)
 
 
+def edit_profile(request):
+    if request.method == "POST":
+        form = UserEditForm(request.POST)
+        if form.is_valid():
+            new_username = form.cleaned_data.get('username')
+            new_password = form.cleaned_data.get('password')
+            user = User.objects.get(username=request.user.username)
+            all_user = allusers.objects.get(user=user)
+            user.username = new_username
+            user.set_password(new_password)
+            user.save()
+            return redirect('profile.html', {'form': form} )
+
+class EditarProfile(FormView):
+    template_name = 'profile-edit.html'
+    form_class = UserEditForm
+    success_url = 'profile/'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.save()
+        return super().form_valid(form)
